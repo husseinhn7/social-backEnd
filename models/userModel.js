@@ -1,8 +1,7 @@
 import mongoose  from "mongoose";
 import validator from "validator"
-
-
-
+import bcrypt from "bcrypt"
+import crypto from "crypto"
 
 
 const userSChema = mongoose.Schema({
@@ -38,15 +37,19 @@ const userSChema = mongoose.Schema({
     birthDate : {
         type : Date
     },
-    followers : {
-        type : mongoose.Schema.ObjectId
-    },
+    followers : [{
+        type : mongoose.Schema.ObjectId,
+        ref : "user"
+    }],
+    following : [{
+        type : mongoose.Schema.ObjectId,
+        ref : "user"
+    }],
     personalImage : {
-        type : URL
+        type : String,
+        default : "/images/blank.webp"
     },
-    coverImage : {
-        type : URL
-    },
+    
     emailConfirmed :{
         type : Boolean,
         default : false
@@ -58,9 +61,44 @@ const userSChema = mongoose.Schema({
 
 )
 
+userSChema.pre("save", async function( next ){
+    if(!this.isModified("password")) return next();
+    this.password = await bcrypt.hash(this.password, 12)
+    this.confirmPassword = undefined
+
+    next()
+})
 
 
-const user = mongoose.model("user" , userSChema)
+userSChema.methods.correctPassword = async function (postedPassword , password ){
+    return await bcrypt.compare(postedPassword, password)
+}
+
+userSChema.methods.passwordRestTokenFn =  function() {
+    const restToken = crypto.randomBytes(32).toString("hex")
+    this.passwordRestToken = crypto.createHash("sha256").update(restToken).digest("hex")
+    this.PasswordRestExpires = Date.now() + 10 * 60 * 1000
+    return restToken
+}
+
+userSChema.pre("save" , async function( next ) {
+    if(!this.isModified("password") || this.isNew ) return next();
+
+    this.passwordChangedAt = Date.now() - 1000 ; 
+    next()
+})
+
+userSChema.methods.passwordChangedAfter = async function(JWTDate){
+    if (this.passwordChangedAt){
+        const date = parseInt(this.passwordChangedAt.getTime() / 1000, 10 )
+      
+        return date < JWTDate
+    }
+    return false
+}
 
 
-export default user;
+const userModel = mongoose.model("user" , userSChema)
+
+
+export default userModel;

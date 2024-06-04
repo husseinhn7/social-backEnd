@@ -1,9 +1,4 @@
 import mongoose from "mongoose";
-import user from "./userModel";
-
-
-
-
 
 
 const postSchema = mongoose.Schema({
@@ -18,12 +13,18 @@ const postSchema = mongoose.Schema({
         default : Date.now()
     },
     user :{
-        type : mongoose.Schema.ObjectId
+        type : mongoose.Schema.ObjectId,
+        ref : "user"
     },
     likes : {
-       type : [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
+       type : [{ type: mongoose.Schema.Types.ObjectId, ref: 'user' }]
     },
     comments : {
-        type : mongoose.Schema.ObjectId
+        type : mongoose.Schema.ObjectId,
+        ref : "comment"
     }
 })
+
+
+const postModel = mongoose.model("post", postSchema)
+export default postModel

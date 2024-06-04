@@ -8,6 +8,7 @@ mongoose.connect(localDB ).then((con)=>{
     if(con){
         app.listen(4000, ()=>{
             console.log("app is listening  ")
+
         })
     }
 })
