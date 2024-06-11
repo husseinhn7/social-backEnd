@@ -2,14 +2,13 @@ import jwt from "jsonwebtoken"
 import userModel from "../models/userModel.js"
 import { response } from "../util/controllersUtil.js"
 import crypto from "crypto"
-import { token } from "morgan"
+ 
 
 
 
 
 
-
-const loginToken = (user) =>{
+export const loginToken = (user) =>{
     return jwt.sign({id: user._id} , process.env.JWT_SEC , {
         expiresIn : process.env.JWT_EXP
     })
@@ -28,14 +27,20 @@ export const  login = async (req, res) =>{
     const { email , password } = await req.body
     if (!email || !password) return response(res,403, {msg : "we require both email and password"})
     
-    const User = await userModel.findOne({email : email }).select("+password")
-    console.log(User)
-
+    const User = await userModel.findOne({email : email }).select("+password").populate({
+        path : "followers",
+        select : "firstName lastName personalImage _id"
+    }).populate({
+        path : "following",
+        select : "firstName lastName personalImage _id"
+    })
+ 
     if(!User || !(await User.correctPassword(password, User.password))) return response(res, 404, {msg : "incorrect email or password"})
 
     const token = loginToken(User)
     
     User.password = undefined
+
     response(res, 200, {
         user : User,
         token : token 
@@ -67,7 +72,6 @@ export const restPassword = async (req, res) =>{
     User.password = password
     User.passwordRestToken = undefined
     User.PasswordRestExpires = undefined
-    console.log(User)
     await User.save({validateBeforeSave : false})
     const token = loginToken(User)
     response(res, 200, {user: User, token: token })

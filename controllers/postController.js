@@ -2,6 +2,8 @@ import postModel from "../models/postModel.js"
 import multer from "multer"
 import { response } from "../util/controllersUtil.js"
 import userModel from "../models/userModel.js"
+import notificationModel from "../models/notificationModel.js"
+import { socketEmit, getSocket } from "../socket.js"
 const multerStorage = multer.diskStorage({
     destination : (req, file, cb)=>{
         cb(null, "public/images")
@@ -36,7 +38,6 @@ export const uploadPostImage = upload.single("photo")
 
 export const createPost = async (req, res) =>{
     const { body , user } = await req 
-    console.log(body)
     const postData = {...body, user : user._id , image :  req.image ? req.image : ""  }
     const newPost = await postModel.create(postData)
     response(res, 201, {msg : newPost} )
@@ -67,18 +68,18 @@ export const updatePost =  async (req, res) =>{
 
 
 export const getAllPosts = async (req, res) => {
-    const { param } = await req
-    const posts = await postModel.find({user : param.id}).sort({createdAt : -1})
+    const { params } = await req
+      const posts = await postModel.find({user : req.user._id}).sort({createdAt : -1})
     response(res, 200, {
         posts : posts
     })
-}
+ }
 
 export const timelinePosts = async (req, res ) =>{
     const user = await userModel.findById(req.params.id)
     const friendsPosts = await postModel.find({user : {$in : user.following }}).sort({createdAt : -1}).populate({
         path : "user",
-        select : "firstName -_id"
+        select : "firstName lastName personalImage -_id"
     })
     response(res, 200, friendsPosts)
 
@@ -86,10 +87,18 @@ export const timelinePosts = async (req, res ) =>{
 
 
 export const reactPost = async (req, res) =>{
-    const {user ,  params } = req
+    const {user,  params } = req
     const post = await postModel.findById(params.id)
     if (!post.likes.includes(user.id)){
         await post.updateOne({ $push: { likes : user.id } })
+        const name = `${user.firstName} ${user.lastName}`
+        const action  = `${name} liked your post ${post.text}`
+        const note = await notificationModel.create({sender : user._id , receiver : post.user._id , action : action})
+        const socketId = getSocket(post.user._id.toString())
+        if(socketId){
+            socketEmit(socketId, "like", note )
+        }
+        console.log( )
         response(res, 200, {msg: "like post "})
     }
     else if (post.likes.includes(user.id)) {

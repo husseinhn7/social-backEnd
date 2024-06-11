@@ -56,7 +56,8 @@ const userSChema = mongoose.Schema({
     },
     passwordChangedAt : Date,
     passwordRestToken : String,
-    PasswordRestExpires : Date
+    PasswordRestExpires : Date,
+    socketID : String
   },
 
 )
@@ -64,7 +65,7 @@ const userSChema = mongoose.Schema({
 userSChema.pre("save", async function( next ){
     if(!this.isModified("password")) return next();
     this.password = await bcrypt.hash(this.password, 12)
-    this.confirmPassword = undefined
+     this.confirmPassword = undefined
 
     next()
 })
@@ -84,14 +85,15 @@ userSChema.methods.passwordRestTokenFn =  function() {
 userSChema.pre("save" , async function( next ) {
     if(!this.isModified("password") || this.isNew ) return next();
 
-    this.passwordChangedAt = Date.now() - 1000 ; 
-    next()
+    this.passwordChangedAt = Date.now() - 2000 ;
+     next()
 })
 
 userSChema.methods.passwordChangedAfter = async function(JWTDate){
     if (this.passwordChangedAt){
         const date = parseInt(this.passwordChangedAt.getTime() / 1000, 10 )
-      
+     
+
         return date < JWTDate
     }
     return false

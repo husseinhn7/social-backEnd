@@ -1,6 +1,7 @@
 import { Router } from "express";
-import { follow, unfollow } from "../controllers/userControllers.js";
+import { follow, unfollow, getAllFollowers, getAllFollowing, updateMe , updateProfileImage } from "../controllers/userControllers.js";
 import { authOnly } from "../middleware/protected.js";
+
 
 
 
@@ -20,6 +21,19 @@ userRouter.route("/follow/:id")
 
 userRouter.route("/unfollow/:id")
 .put(authOnly, unfollow)
+
+
+userRouter.route("/followers")
+.get(authOnly, getAllFollowers)
+
+
+userRouter.route("/following")
+.get(authOnly, getAllFollowing)
+
+
+
+userRouter.route("/updateMe")
+.patch(authOnly, updateProfileImage, updateMe)
 
 
 

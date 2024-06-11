@@ -7,7 +7,6 @@ const postRouter = Router()
 
 postRouter.route("/")
 .post( authOnly, uploadPostImage, createPost)
-.get(getAllPosts)
 
 postRouter.route("/:id")
 .get(authOnly, timelinePosts)
@@ -15,8 +14,9 @@ postRouter.route("/:id")
 .patch( authOnly, updatePost)
 .post(  authOnly, reactPost )
 
+postRouter.route("/me/:userId")
+.get(authOnly, getAllPosts)
 
-postRouter.route("/:idP")
-
+ 
 
 export default postRouter
