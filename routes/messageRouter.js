@@ -6,9 +6,10 @@ const messageRouter = Router()
 
 
 messageRouter.route("/")
-.get(authOnly,  getMessages)
 .post(authOnly, createMessage)
 
+messageRouter.route("/:id")
+.get(authOnly,  getMessages)
 
 
 export default messageRouter

@@ -20,5 +20,6 @@ const messageSchema = mongoose.Schema({
 
 
 const messageModel =  mongoose.model("message", messageSchema)
+messageSchema.index({ dateCreated: 1 });
 
 export default  messageModel

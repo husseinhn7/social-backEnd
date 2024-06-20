@@ -4,6 +4,8 @@ import { response } from "../util/controllersUtil.js"
 import userModel from "../models/userModel.js"
 import notificationModel from "../models/notificationModel.js"
 import { socketEmit, getSocket } from "../socket.js"
+
+
 const multerStorage = multer.diskStorage({
     destination : (req, file, cb)=>{
         cb(null, "public/images")
@@ -69,7 +71,11 @@ export const updatePost =  async (req, res) =>{
 
 export const getAllPosts = async (req, res) => {
     const { params } = await req
-      const posts = await postModel.find({user : req.user._id}).sort({createdAt : -1})
+      const posts = await postModel.find({user : req.user._id}).sort({createdAt : -1}).populate({
+        path : "user",
+        select : "firstName lastName personalImage -_id"
+    })
+    
     response(res, 200, {
         posts : posts
     })

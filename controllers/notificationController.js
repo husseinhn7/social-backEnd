@@ -1,5 +1,5 @@
-import notificationModel from "../models/notificationModel";
- 
+import notificationModel from "../models/notificationModel.js";
+import { response } from "../util/controllersUtil.js";
 
 
 export const createNotification = async (req, res) =>{
@@ -16,5 +16,12 @@ export const createNotification = async (req, res) =>{
 
 
 export const getNotifications = async (req, res) =>{
+    const {user} = req
+    const notifications = await notificationModel.find({receiver : user._id }).sort({dateCreated:-1}).populate({
+        path : "sender",
+        select : "firstName lastName personalImage"
+    })
+
+    response(res, 200, notifications)
 
 }

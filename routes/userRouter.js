@@ -14,8 +14,6 @@ userRouter.route("/")
 .get()
 
 
-
-
 userRouter.route("/follow/:id")
 .put(authOnly, follow)
 

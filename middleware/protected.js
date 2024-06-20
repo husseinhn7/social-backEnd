@@ -21,10 +21,10 @@ export const authOnly = async (req, res, next) =>{
 
     if(!user) return response(res, 403, {msg: "unauthorized"})
     
-    if(!(await user.passwordChangedAfter(decodedJwt.iat))) {
+    // if(!(await user.passwordChangedAfter(decodedJwt.iat))) {
        
-        return response(res, 403, {msg: "unauthorized token exp"}) 
-    }
+    //     return response(res, 403, {msg: "unauthorized token exp"}) 
+    // }
     req.user = user
     next()
 }

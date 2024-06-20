@@ -9,9 +9,11 @@ import userRouter  from "./routes/userRouter.js";
 import notificationRouter from "./routes/notificationRouter.js";
 import messageRouter from "./routes/messageRouter.js";
 import cors from "cors"
+import { networkInterfaces } from "os";
 
 
 
+const HOST = networkInterfaces()['Wi-Fi'][1].address
 
 
 const app = express()
@@ -21,7 +23,7 @@ app.use(express.json({limit: '50mb'}))
 app.use(morgan("dev"))
 app.use(express.static("public"))
 app.use(cors({
-    origin : "http://localhost:3000"
+    origin :[ "http://localhost:3000", `http://${HOST}:3000`]
 }))
 
 
