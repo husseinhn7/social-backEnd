@@ -7,7 +7,7 @@ import { addSocket, getSocket, socketEmit } from "./socket.js";
 
 
 const localDB = process.env.DB_LOCAL
-
+const prodDB  = process.env.DB_ATLAS.replace("<password>", process.env.DB_PASS )
 export const expressServer = createServer(app)
 
 const HOST = networkInterfaces()['Wi-Fi'][1].address
@@ -15,7 +15,7 @@ const HOST = networkInterfaces()['Wi-Fi'][1].address
 
 
 const mongooseConnection = async () =>{
-    const dbConnection = await mongoose.connect(localDB)
+    const dbConnection = await mongoose.connect(prodDB)
     const conStatus    = await dbConnection.connection
     if(conStatus){
         const server = expressServer.listen(5000,HOST,()=>{
